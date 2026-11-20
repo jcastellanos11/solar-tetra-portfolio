@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { Euler, Quaternion, Vector3 } from 'three';
 import { TetraController } from '../src/interaction/TetraController.ts';
 import { faces, faceById } from '../src/interaction/faces.ts';
-import { dominantFace, faceScores, motion, restingOrientation } from '../src/interaction/rotation.ts';
+import { IDLE_SPEED_MULTIPLIER, ambientMotion, idleOffset, dominantFace, faceScores, motion, restingOrientation } from '../src/interaction/rotation.ts';
 
 const camera = new Vector3(0, 0, 7.7);
 function controller() { const c = new TetraController(); c.setAvailable(true); return c; }
@@ -276,5 +276,53 @@ test('Home works immediately without WebGL and with reduced motion', () => {
     c.request('home');
     assert.equal(c.active, 'home'); assert.equal(c.activeFace, null);
     assert.ok(c.orientation.angleTo(restingOrientation('home')) < 1e-7);
+  }
+});
+
+test('enhanced angular envelope is 1.8x and manual takeover/resumption stays continuous', () => {
+  assert.deepEqual(ambientMotion.amplitude, [0.0252, 0.0324, 0.081]);
+  const offset = new Quaternion(); let peak = 0;
+  for (let i = 0; i < 12000; i++) peak = Math.max(peak, idleOffset(i / 60, 1, offset).angleTo(new Quaternion()));
+  assert.ok(peak > .07 && peak < .11);
+  for (const face of faces) {
+    const c = controller(); c.request(face.id); advance(c, 12);
+    const before = c.orientation.clone(); c.beginDrag(9, 0, 0, 0, face.id);
+    assert.ok(before.angleTo(c.orientation) < 1e-7);
+    c.step(.016); assert.ok(before.angleTo(c.orientation) < 1e-7);
+    c.cancelDrag(9); advance(c, 3);
+    const settled = c.orientation.clone(); c.step(1 / 60);
+    assert.ok(settled.angleTo(c.orientation) < .01);
+  }
+});
+
+test('idle runs the existing Home and active-face paths at 3x frequency without scaling amplitude', () => {
+  assert.equal(IDLE_SPEED_MULTIPLIER, 3);
+  for (const overview of [false, true]) {
+    const amplitude = overview ? ambientMotion.homeAmplitude : ambientMotion.amplitude;
+    const speed = overview ? ambientMotion.homeSpeed : ambientMotion.speed;
+    for (const time of [0, .1, 1, 2, 3, 10, 90]) {
+      const angles = speed.map((frequency, axis) => {
+        const phase = time * 3 * frequency;
+        const wave = overview ? Math.sin(phase) : (Math.sin(phase) + .15 * Math.sin(phase * .43)) / 1.15;
+        return wave * amplitude[axis];
+      });
+      const expected = new Quaternion().setFromEuler(new Euler(...angles));
+      assert.ok(idleOffset(time, 1, new Quaternion(), overview).angleTo(expected) < 1e-7);
+    }
+    const start = idleOffset(0, 1, new Quaternion(), overview);
+    assert.ok(start.angleTo(idleOffset(2, 1, new Quaternion(), overview)) > .03, 'visible angular excursion within two seconds');
+  }
+});
+
+test('faster idle has equivalent orientations at 30, 60 and 120 fps', () => {
+  for (const section of ['home', ...faces.map((face) => face.id)]) {
+    const orientations = [30, 60, 120].map((fps) => {
+      const c = controller();
+      c.setReducedMotion(true); c.request(section); c.setReducedMotion(false);
+      advance(c, 2, fps);
+      return c.orientation;
+    });
+    assert.ok(orientations[0].angleTo(orientations[1]) < 1e-7);
+    assert.ok(orientations[1].angleTo(orientations[2]) < 1e-7);
   }
 });

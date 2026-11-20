@@ -48,7 +48,7 @@ function advance(store, start = 0, seconds = 3) {
   for (let i = 1; i <= seconds * 60; i++) frame(store, start + i / 60);
 }
 
-async function mount(t, { throwRender = false, satelliteEnabled = false, shaderFailure = false } = {}) {
+async function mount(t, { throwRender = false, satelliteEnabled = false, shaderFailure = false, width = 640, height = 600, orbitLimits } = {}) {
   const canvas = new Canvas(), controller = new TetraController(), errors = [];
   let renders = 0, readyCalls = 0;
   const renderer = {
@@ -61,12 +61,12 @@ async function mount(t, { throwRender = false, satelliteEnabled = false, shaderF
     },
   };
   const root = createRoot(canvas);
-  await root.configure({ gl: renderer, frameloop: 'never', dpr: 1, size: { width: 640, height: 600, top: 0, left: 0 }, camera: { position: [0, 0, 7.7], fov: 40 } });
+  await root.configure({ gl: renderer, frameloop: 'never', dpr: 1, size: { width, height, top: 0, left: 0 }, camera: { position: [0, 0, 7.7], fov: 40 } });
   const orbit = new CvOrbit(), satellite = { current: { style: {}, dataset: {} } };
   const onFailure = (error) => { errors.push(error); controller.setAvailable(false); };
   const element = () => createElement('group', { name: 'scene' },
     createElement(SceneRuntime, { onFailure, onReady: () => { readyCalls++; } }),
-    createElement(SatelliteMotion, { orbit, element: satellite, controller, reducedMotion: controller.reducedMotion, enabled: satelliteEnabled, onFailure }),
+    createElement(SatelliteMotion, { orbit, element: satellite, controller, reducedMotion: controller.reducedMotion, enabled: satelliteEnabled, onFailure, orbitLimits: { current: orbitLimits } }),
     createElement(InteractiveTetra, { controller, daylight: false, reducedMotion: false, labels: {}, onFailure }),
   );
   let store;
@@ -315,4 +315,26 @@ test('mounted satellite respects its enable gate and follows independent paused 
   advance(shown.store, 6 + 1 / 60);
   assert.equal(shown.satellite.current.style.transform, still);
   assert.deepEqual(shown.errors, []);
+});
+
+test('mounted satellite moves at compact widths inside measured control boundaries and freezes immediately on pointer down', async (t) => {
+  for (const width of [280, 320, 375, 390, 430, 768, 1200]) {
+    const limits = { top: 124, bottom: 236, labelTop: 118, labelBottom: 242 };
+    const view = await mount(t, { satelliteEnabled: true, width, height: 390, orbitLimits: limits });
+    frame(view.store, 1 / 60);
+    const before = view.satellite.current.style.transform;
+    for (let i = 2; i < 900; i++) {
+      frame(view.store, i / 60);
+      const [, x, y] = /translate\(([\d.]+)px, ([\d.]+)px\)/.exec(view.satellite.current.style.transform);
+      assert.ok(+x >= 24 && +x <= width - 24);
+      assert.ok(+y >= limits.top && +y <= limits.bottom);
+    }
+    assert.notEqual(view.satellite.current.style.transform, before);
+    const paused = view.satellite.current.style.transform;
+    view.orbit.pause('pointer', true);
+    frame(view.store, 15);
+    assert.equal(view.satellite.current.style.transform, paused);
+    assert.equal(view.controller.active, 'home');
+    assert.deepEqual(view.errors, []);
+  }
 });

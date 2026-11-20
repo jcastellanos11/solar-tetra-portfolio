@@ -1,9 +1,10 @@
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
-import { CvOrbit, HomePress, satellitePosition } from '../src/interaction/accessories.ts';
+import { CvOrbit, HomePress, satellitePosition, clearSatelliteLabel } from '../src/interaction/accessories.ts';
 import { translations } from '../src/data/content.ts';
 import { cvCatalog, selectCv } from '../src/data/cv.ts';
 
@@ -116,14 +117,16 @@ test('satellite cancellation clears a held pause and keyboard activation remains
   assert.equal(orbit.press.activate(true), true);
 });
 
-test('orbital positions keep the target inside the viewport and dock on small screens', () => {
+test('orbital positions remain bounded and move on mobile unless usable space is exhausted', () => {
   for (const [width, height] of [[300, 350], [500, 650], [1000, 800]]) {
     for (let i = 0; i < 100; i++) {
       const p = satellitePosition(width, height, i * 0.1);
       assert.ok(p.x >= 24 && p.x <= width - 24); assert.ok(p.y >= 24 && p.y <= height - 24);
     }
   }
-  assert.deepEqual(satellitePosition(300, 350, 0), satellitePosition(300, 350, 3));
+  assert.notDeepEqual(satellitePosition(300, 350, 0), satellitePosition(300, 350, 3));
+  const cramped = { top: 130, bottom: 135, labelTop: 100, labelBottom: 130 };
+  assert.deepEqual(satellitePosition(280, 180, 0, cramped), satellitePosition(280, 180, 3, cramped));
 });
 
 test('central Home control is a labeled native button and pointer movement cannot turn a drag into Home navigation', () => {
@@ -137,4 +140,29 @@ test('central Home control is a labeled native button and pointer movement canno
   press.move(1, 150, 100); assert.equal(press.activate(false), false);
   assert.equal(press.activate(true), true);
   press.cancel(); assert.equal(press.activate(false), false);
+});
+
+test('responsive orbit clears measured Home/navigation bands and projected face labels', () => {
+  for (const width of [280, 320, 375, 390, 430, 768, 1200]) {
+    const limits = { top: 124, bottom: 236, labelTop: 118, labelBottom: 242 };
+    for (let i = 0; i < 720; i++) {
+      const point = satellitePosition(width, 390, i * Math.PI / 360, limits);
+      assert.ok(point.x >= 24 && point.x <= width - 24);
+      assert.ok(point.y >= limits.top && point.y <= limits.bottom);
+      const label = clearSatelliteLabel({ x: width / 2, y: 180 }, 110, 44, width, limits.labelTop, limits.labelBottom, point);
+      assert.ok(label, `space exists for a label at ${width}`);
+      assert.ok(Math.abs(label.x - point.x) >= 91 - .01 || Math.abs(label.y - point.y) >= 58 - .01);
+    }
+  }
+});
+
+test('compact tooltip is removed even on hover/focus/touch; desktop behavior and accessible names remain', () => {
+  const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8');
+  assert.match(css, /@media \(max-width: 860px\)\s*\{\s*\.cv-satellite \.satellite-label \{ display: none; \}/);
+  assert.match(css, /\.cv-satellite:hover \.satellite-label, \.cv-satellite:focus \.satellite-label \{ opacity: 1; \}/);
+  for (const lang of ['en', 'es', 'tr']) {
+    const element = view.satellite(lang, new CvOrbit(), { current: null });
+    assert.ok(element.props['aria-label'].includes(translations[lang].cvLabel));
+    assert.ok(element.props['aria-label'].includes(translations[lang].cvLanguages.en));
+  }
 });

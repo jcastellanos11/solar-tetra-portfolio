@@ -1,5 +1,28 @@
 # Solar Tetra browser verification
 
+## Mobile orbit and ambient refinements — November 20, 2026
+
+Native desktop Firefox against the existing `http://127.0.0.1:5173/` Vite development server. The host-managed browser connector was unavailable, so native browser UI and Firefox Responsive Design Mode were used. These are desktop viewport observations, not physical iOS/Android verification or a production deployment check.
+
+| Width | Observed combination |
+| --- | --- |
+| 320px | English, dark, Projects |
+| 375px | English, dark, Projects |
+| 390px | Spanish, light, Projects |
+| 430px | Turkish, light, Projects |
+| 768px | Turkish, light, Projects; keyboard satellite focus |
+| 1200px | Turkish light and English dark; desktop tooltip, Home/manual rotation/Contact |
+
+- Live energetic glass and solar core rendered throughout. The compact satellite changed position across observations instead of docking, retained its document icon/EN badge, and stayed inside the scene with clearance from Home and the face-key controls in the inspected layouts. The active Projects label moved clear of the satellite when needed. The active face remained recognizable during the visibly stronger bounded idle movement; no unintended section change was observed while idle. This is a visual spot check, not a continuous full-orbit collision capture of every language/layout.
+- Compact screenshots contained no floating CV description. At 768px keyboard Tab focused the satellite with a visible outline and full Turkish accessible name, while the tooltip remained hidden. At 1200px the same focus interaction displayed “CV indir / İngilizce · PDF”. Automated CSS contracts additionally cover the hover/focus/touch override at <=860px. The first narrow checks used Firefox touch emulation; it was disabled for subsequent deterministic mouse/keyboard interactions. No physical tap was tested.
+- Dragging from the focused desktop satellite did not download or change Projects. A subsequent separate click completed a real 226KB download and opened Firefox's PDF viewer. `john-castellanos-cv-en-3.pdf` (browser duplicate filename) matched the public source SHA-256 `97fda3dbb747e4a31a9d01a20aa05ea43da82040b948ba17b9687a4b5a80bfb8`. The approved PDF and CV metadata were not modified.
+- Home navigation still returned the angled whole-object overview. A manual drag of the actual tetrahedron kept Home during movement, then settled and committed Contact. Returning Home worked afterward. No blocking loader appeared during these selections.
+- Restored the original responsive width 760 and enabled touch-emulation setting, closed responsive mode, and left the new local test tab in Spanish/dark/Home. The new PDF download copy remains in Downloads.
+
+Automated result: **104 tests pass**, including mounted R3F orbit movement at compact widths, measured boundaries and immediate pointer pause; actual accessory handlers/download isolation; reduced-motion pause; all-face >0.98 dominance/no idle commits over 90-second simulations; smooth manual takeover/resumption; and unchanged readiness/fallback/quaternion coverage. Content validation, TypeScript, production build, and approved CV source/output equality pass. CSS contract tests are not a substitute for a layout engine.
+
+Remaining: physical iOS/Android tap acquisition while orbiting, download/scroll/drag isolation and touch hover behavior; Chrome/Safari repeat checks; browser reduced-motion preference before/during interaction; screen-reader names; prolonged complete orbits with every face, language, theme, and viewport combination; rapid resizing/orientation changes and genuinely cramped-height fallback; low-power GPU/frame pacing. No physical-device, screen-reader, FPS, or GPU profiling was performed for this update. Previously documented failure-mode follow-ups below remain outstanding.
+
 ## Approved English CV activation — November 20, 2026
 
 Native Firefox tested the existing local Vite development server. Chrome's native window was unavailable (`cgWindowNotFound`), and the browser connector host was unavailable. Starting a new production preview server failed with `listen EPERM`; production files were validated on disk, not served through a newly started preview.

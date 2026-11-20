@@ -1,7 +1,7 @@
 import { Quaternion } from 'three/src/math/Quaternion.js';
 import { Vector3 } from 'three/src/math/Vector3.js';
 import type { FaceSection, Section } from '../data/content.ts';
-import { damping, dominantFace, idleOffset, motion, restingOrientation } from './rotation.ts';
+import { ambientMotion, damping, dominantFace, idleOffset, motion, restingOrientation } from './rotation.ts';
 
 export type Phase = 'idle' | 'dragging' | 'coasting' | 'settling' | 'aligning';
 type Pointer = { id: number; x: number; y: number; startX: number; startY: number; time: number; moved: boolean; downFace: FaceSection };
@@ -149,8 +149,8 @@ export class TetraController {
       return;
     }
     if (!this.reducedMotion) {
-      this.idleStrength += (1 - this.idleStrength) * damping(1.8, dt);
-      idleOffset(this.elapsed, this.idleStrength, this.offset);
+      this.idleStrength += (1 - this.idleStrength) * damping(ambientMotion.resumeDamping, dt);
+      idleOffset(this.elapsed, this.idleStrength, this.offset, this.active === 'home');
       this.deltaQ.copy(this.cameraQ).multiply(this.offset).multiply(this.cameraInverse);
       this.orientation.copy(this.base).premultiply(this.deltaQ);
     } else this.orientation.copy(this.base);

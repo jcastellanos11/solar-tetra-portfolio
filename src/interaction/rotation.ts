@@ -32,11 +32,24 @@ export function restingOrientation(id: Section, cameraOrientation = new Quaterni
   return cameraOrientation.clone().multiply(id === 'home' ? homeOverview : faceById[id].orientation);
 }
 
+// Scale only idle phase time; interaction damping and accessory clocks are independent.
+export const IDLE_SPEED_MULTIPLIER = 5;
+export const ambientMotion = {
+  amplitude: [0.0252, 0.0324, 0.081] as const,
+  speed: [0.34, 0.27, 0.21] as const,
+  homeAmplitude: [0.014, 0.018, 0.045] as const,
+  homeSpeed: [0.39, 0.31, 0.24] as const,
+  variationAmplitude: 0.15,
+  variationSpeed: 0.43,
+  resumeDamping: 1.8,
+};
 const idleEuler = new Euler();
-export function idleOffset(time: number, strength: number, out: Quaternion) {
-  return out.setFromEuler(idleEuler.set(
-    Math.sin(time * 0.39) * 0.014 * strength,
-    Math.sin(time * 0.31) * 0.018 * strength,
-    Math.sin(time * 0.24) * 0.045 * strength,
-  ));
+export function idleOffset(time: number, strength: number, out: Quaternion, overview = false) {
+  const idleTime = time * IDLE_SPEED_MULTIPLIER;
+  const a = overview ? ambientMotion.homeAmplitude : ambientMotion.amplitude;
+  const speed = overview ? ambientMotion.homeSpeed : ambientMotion.speed;
+  // A second, incommensurate wave adds variation without exceeding the angular envelope.
+  const wave = (axis: number) => overview ? Math.sin(idleTime * speed[axis])
+    : (Math.sin(idleTime * speed[axis]) + ambientMotion.variationAmplitude * Math.sin(idleTime * speed[axis] * ambientMotion.variationSpeed)) / (1 + ambientMotion.variationAmplitude);
+  return out.setFromEuler(idleEuler.set(wave(0) * a[0] * strength, wave(1) * a[1] * strength, wave(2) * a[2] * strength));
 }

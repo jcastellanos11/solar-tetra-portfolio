@@ -9,7 +9,7 @@ import { TetraController } from '../interaction/TetraController';
 import { pickFace } from '../interaction/picking';
 import { FaceLabels, type LabelElements } from './FaceLabels';
 import { CvSatellite } from './CvSatellite';
-import { CvOrbit, satellitePosition } from '../interaction/accessories';
+import { CvOrbit, satellitePosition, clearSatelliteLabel, satelliteMotion, type OrbitLimits, type OrbitPoint } from '../interaction/accessories';
 import { SceneRuntime, useSceneFrame, type SceneFailureHandler } from './SceneRuntime';
 import { sceneDpr, startupMark } from '../loading/readiness';
 
@@ -175,9 +175,9 @@ function GlassFace({ id, controller, hovered, daylight, reducedMotion, meshes, o
   return <mesh ref={(mesh) => { if (mesh) meshes.set(id, mesh); else meshes.delete(id); }} geometry={geometry} material={shader} userData={{ section: id }} />;
 }
 
-export function InteractiveTetra({ controller, daylight, reducedMotion, labels, onFailure }: {
+export function InteractiveTetra({ controller, daylight, reducedMotion, labels, onFailure, satellitePoint, orbitLimits }: {
   controller: TetraController; daylight: boolean; reducedMotion: boolean;
-  labels: LabelElements; onFailure: SceneFailureHandler;
+  labels: LabelElements; onFailure: SceneFailureHandler; satellitePoint?: RefObject<OrbitPoint | null>; orbitLimits?: RefObject<OrbitLimits | null>;
 }) {
   const group = useRef<THREE.Group>(null);
   const hovered = useRef<FaceSection | null>(null);
@@ -269,15 +269,18 @@ export function InteractiveTetra({ controller, daylight, reducedMotion, labels, 
       normal.copy(face.normal).transformDirection(group.current.matrixWorld);
       eye.copy(camera.position).sub(world).normalize();
       projected.copy(face.centroid).lerp(tetraVertices[face.indices[0]], 0.5).applyMatrix4(group.current.matrixWorld).project(camera);
-      const x = (projected.x * 0.5 + 0.5) * size.width;
-      const y = (-projected.y * 0.5 + 0.5) * size.height;
+      let x = (projected.x * 0.5 + 0.5) * size.width;
+      let y = (-projected.y * 0.5 + 0.5) * size.height;
       const width = element.offsetWidth || 110;
+      const height = element.offsetHeight || 44;
+      const safe = clearSatelliteLabel({ x, y }, width, height, size.width, orbitLimits?.current?.labelTop ?? 40, orbitLimits?.current?.labelBottom ?? size.height - 90, satellitePoint?.current);
+      if (safe) { x = safe.x; y = safe.y; }
       const visible = projected.z > -1 && projected.z < 1 && normal.dot(eye) > 0.12;
       const moving = controller.phase !== 'idle';
       const important = face.id === controller.active || face.id === hovered.current || element === document.activeElement;
       const discoverable = controller.active === 'home' || face.id === controller.active;
       const collision = occupied.some((p) => Math.abs(x - p.x) < (width + p.width) / 2 + 12 && Math.abs(y - p.y) < 46);
-      const show = visible && (!moving || element === document.activeElement) && (important || discoverable) && !collision && x > width / 2 + 8 && x < size.width - width / 2 - 8 && y > 35 && y < size.height - 90;
+      const show = Boolean(safe) && visible && (!moving || element === document.activeElement) && (important || discoverable) && !collision && x > width / 2 + 8 && x < size.width - width / 2 - 8 && y > 35 && y < size.height - 90;
       // Do not strand focus if a previously visible label becomes occluded.
       const focused = element === document.activeElement;
       element.style.visibility = show || focused ? 'visible' : 'hidden';
@@ -295,15 +298,16 @@ export function InteractiveTetra({ controller, daylight, reducedMotion, labels, 
   </group>;
 }
 
-export function SatelliteMotion({ orbit, element, controller, reducedMotion, enabled, onFailure }: {
+export function SatelliteMotion({ orbit, element, controller, reducedMotion, enabled, onFailure, satellitePoint, orbitLimits }: {
   orbit: CvOrbit; element: RefObject<HTMLAnchorElement | null>; controller: TetraController;
-  reducedMotion: boolean; enabled: boolean; onFailure: SceneFailureHandler;
+  reducedMotion: boolean; enabled: boolean; onFailure: SceneFailureHandler; satellitePoint?: RefObject<OrbitPoint | null>; orbitLimits?: RefObject<OrbitLimits | null>;
 }) {
   const { size } = useThree();
   useSceneFrame((_state, delta) => {
     if (!enabled || !element.current) return;
-    orbit.step(delta, reducedMotion, controller.phase !== 'idle');
-    const point = satellitePosition(size.width, size.height, orbit.angle);
+    orbit.step(delta, reducedMotion, controller.phase !== 'idle', size.width < 450 ? satelliteMotion.compactSpeed : satelliteMotion.desktopSpeed);
+    const point = satellitePosition(size.width, size.height, orbit.angle, orbitLimits?.current);
+    if (satellitePoint) satellitePoint.current = point;
     element.current.style.transform = `translate(${point.x}px, ${point.y}px) translate(-50%, -50%)`;
     element.current.style.visibility = 'visible';
     element.current.dataset.labelSide = point.x < size.width / 2 ? 'right' : 'left';
@@ -318,16 +322,35 @@ export function TetraScene({ controller, selected, onSelect, daylight, reducedMo
   const labels = useRef<LabelElements>({});
   const satellite = useRef<HTMLAnchorElement>(null);
   const orbit = useMemo(() => new CvOrbit(), []);
+  const satellitePoint = useRef<OrbitPoint | null>(null);
+  const orbitLimits = useRef<OrbitLimits | null>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const region = stage.current?.closest<HTMLElement>('.visual-pane');
+    if (!region) return;
+    const home = region.querySelector<HTMLElement>('.core-home-control');
+    const navigation = region.querySelector<HTMLElement>('.face-key');
+    const measure = () => {
+      const rect = region.getBoundingClientRect();
+      const homeBottom = home ? home.getBoundingClientRect().bottom - rect.top : 88;
+      const navTop = navigation ? navigation.getBoundingClientRect().top - rect.top : rect.height - 120;
+      orbitLimits.current = { top: homeBottom + 36, bottom: navTop - 36, labelTop: homeBottom + 30, labelBottom: navTop - 30 };
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    [region, home, navigation].forEach((node) => { if (node) observer.observe(node); });
+    return () => observer.disconnect();
+  }, [lang]);
   const dpr = useMemo(() => sceneDpr(window.matchMedia('(pointer: coarse)').matches), []);
-  return <div className="tetra-stage">
+  return <div ref={stage} className="tetra-stage">
     <Canvas camera={{ position: [0, 0, 7.7], fov: 40, near: 0.1, far: 50 }}
       dpr={dpr} gl={{ alpha: true, antialias: true, powerPreference: 'low-power' }}
       onCreated={() => startupMark('renderer-created')}
       className="lab-canvas" aria-label={translations[lang].sceneLabel}
     >
       <SceneRuntime onFailure={onFailure} onReady={onReady} />
-      <SatelliteMotion orbit={orbit} element={satellite} controller={controller} reducedMotion={reducedMotion} enabled={Boolean(selectCv(lang))} onFailure={onFailure} />
-      <InteractiveTetra controller={controller} daylight={daylight} reducedMotion={reducedMotion} labels={labels.current} onFailure={onFailure} />
+      <SatelliteMotion orbit={orbit} element={satellite} controller={controller} reducedMotion={reducedMotion} enabled={Boolean(selectCv(lang))} onFailure={onFailure} satellitePoint={satellitePoint} orbitLimits={orbitLimits} />
+      <InteractiveTetra controller={controller} daylight={daylight} reducedMotion={reducedMotion} labels={labels.current} onFailure={onFailure} satellitePoint={satellitePoint} orbitLimits={orbitLimits} />
     </Canvas>
     <FaceLabels elements={labels.current} lang={lang} active={selected} onSelect={onSelect} />
     <CvSatellite lang={lang} orbit={orbit} element={satellite} />

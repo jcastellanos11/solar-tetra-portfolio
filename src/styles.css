@@ -335,3 +335,8 @@ h1 { margin: 0; font-size: clamp(38px, 4.05vw, 67px); letter-spacing: -.065em; f
   .face-label { padding: 8px; font-size: 10px; }
   .visual-corner--bottom { max-width: 100%; left: 0; right: 0; }
 }
+
+/* Compact scenes keep the accessible link name and EN badge, without a floating tooltip. */
+@media (max-width: 860px) {
+  .cv-satellite .satellite-label { display: none; }
+}
