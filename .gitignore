@@ -1,0 +1,53 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Environment files and local credentials (templates must contain placeholders only)
+.env*
+!.env.example
+.npmrc
+.aws/
+.ssh/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Tool caches, logs, and local working files
+.vite/
+.cache/
+.npm/
+.eslintcache
+*.log
+logs/
+.local/
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+.codex/
+.agents/
+.wrangler/
+.dev.vars*
+
+# macOS metadata
+.DS_Store
+._*
+.AppleDouble/
+.LSOverride
+.Spotlight-V100/
+.Trashes/
+
+# Internal authoring material; keep locally, outside the public repository
+/CODEX_APPROVAL_MESSAGE.md
+/docs/CODEX_CONTENT_PROMPT.md
+/docs/CODEX_NEXT_STEPS.md
+/docs/AI_JOB_MARKET_RESEARCH.md
+
+# Keep package-lock.json, source/test content records, and the approved public CV.
