@@ -1,5 +1,15 @@
 # Solar Tetra browser verification
 
+## Two-project update — November 27, 2026
+
+- Native Firefox opened the exact confirmed Travel Maps and Break My API deployed URLs successfully. Travel Maps showed its public world map after its welcome panel was dismissed. Break My API showed its landing page and `/playground`, with synthetic-only traffic, token bucket/cache/origin flow, HTTP outcomes, capacity/p95 metrics, scenarios, and learning navigation. A local README/package/engine review corroborated the simulator claims; no real load test was run.
+- Captured both deployed applications with Firefox’s built-in visible-page capture/download UI. The added 600/1200px JPEG variants are resized/compressed real captures, not reconstructed UI. Break My API intentionally shows the initial Healthy/Ready state, without fabricated performance numbers. Travel Maps shows the public map, not unobserved private collaboration screens.
+- No live local Solar Tetra server could be used: connection attempts to 5173/5174 failed and starting Vite at 5184 returned `listen EPERM`. As a limited fallback, actual React-rendered ProjectsPanel HTML plus the current full CSS was opened from temporary file previews. Desktop English dark and 320px English/Spanish dark and Turkish light were inspected. Screenshots scale within the cards, chips and categories wrap, and expanded details stay readable. Both demo CTAs opened new tabs at their exact live URLs. The small final CSS refinements (theme accent, explicit summary focus, 44px demo target) were present in the final Spanish preview.
+- Restored responsive width 390 and the original enabled touch-emulation setting, then closed responsive mode. Source screenshot downloads remain outside the repository; static QA fixtures are temporary files, not shipped pages.
+- Automated validation: 110 passing tests, content validation, TypeScript, and production build. Covers exactly two ordered entries, no duplicate Travel Maps, exact safe external demos with translated accessible names, all language copy, no project repository links, responsive/lazy image markup and CSS, approved Travel Maps copy, missing-copy/duplicate rejection, and existing tetrahedron/navigation/mounted runtime regressions.
+
+Still required before release: run the full local application to inspect Projects beside the live tetrahedron, language/theme switching, expansion/scrolling, image loading and focus behavior; physical iOS/Android interaction; Chrome/Safari and screen-reader checks. Static component previews do not validate WebGL, React navigation, physical touch, or production performance. No physical-device/GPU verification or publication was performed.
+
 ## Mobile orbit and ambient refinements — November 20, 2026
 
 Native desktop Firefox against the existing `http://127.0.0.1:5173/` Vite development server. The host-managed browser connector was unavailable, so native browser UI and Firefox Responsive Design Mode were used. These are desktop viewport observations, not physical iOS/Android verification or a production deployment check.

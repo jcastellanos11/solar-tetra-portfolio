@@ -9,16 +9,14 @@ export { loadingCopy } from '../loading/bootstrap.ts';
 
 export { cvCatalog, selectCv } from './cv.ts';
 
-// Public profiles are confirmed; project-specific URLs remain unconfirmed.
-export const links: { github: string | null; linkedin: string | null; email: string | null; travelMapsDemo: string | null; travelMapsRepo: string | null } = {
+// Confirmed public contact profiles. Project URLs live in projects.ts.
+export const links: { github: string | null; linkedin: string | null; email: string | null } = {
   github: 'https://github.com/jcastellanos11',
   linkedin: 'https://www.linkedin.com/in/jhonjaner11/',
   email: 'jhonjaner11@gmail.com',
-  travelMapsDemo: null,
-  travelMapsRepo: null,
 };
 
-export const projectStack = ['TypeScript', 'React', 'PostgreSQL'];
+export { projects, projectCopy } from './projects.ts';
 export const experienceStacks = {
   pariveda: ['Python/Django', 'React', 'TypeScript', 'AWS'],
   infometrika: ['Python/Django', 'JavaScript/TypeScript', 'Vue.js', 'React', 'PostgreSQL/PostGIS', 'MongoDB', 'Docker', 'CI/CD', 'PHP'],
@@ -41,17 +39,12 @@ export const translations = {
     prototype: 'INTERACTIVE PORTFOLIO',
     projectEyebrow: '01 / SELECTED WORK',
     projectTitle: 'Products, not just pages.',
-    projectIntro: 'A collaborative platform for mapping trips, organizing places, and preserving travel memories.',
-    projectName: 'Travel Maps',
+    projectIntro: 'Interactive products for exploring places and understanding how software behaves.',
+    projectCardLabel: 'Project',
+    projectDetailsLabel: 'Project details',
     projectStatus: 'In development',
-    projectBody: 'TypeScript/React frontend, API-driven backend, PostgreSQL, authorization, collaboration, and cloud deployment workflows.',
-    projectWorkflow: 'I use Codex to support implementation planning, code analysis, test design, and iterative improvements while reviewing and validating the resulting code.',
-    projectWorkflowLabel: 'AI-assisted workflow',
-    projectCardLabel: '001 / PROJECT',
-    projectVisualLabel: 'TRAVEL MAPS / PRODUCT',
     demoLabel: 'Live demo',
     sourceLabel: 'Source code',
-    projectFoot: 'Demo and repository links will appear when they are public.',
     experienceEyebrow: '02 / BEHIND THE CODE',
     experiencePanelTitle: 'Professional Experience',
     experienceIntro: "I'm a Senior Full-Stack Software Engineer with over eight years of experience delivering web applications, backend services, and cloud-based solutions. I've grown from hands-on development into technical leadership, working across architecture, code reviews, product delivery, and cross-functional collaboration. I use AI-assisted development to explore technical options, structure implementation tasks, support debugging and testing, and improve documentation — while remaining accountable for the final code. My work spans enterprise integrations, document-management platforms, geospatial products, and practical AI-enabled features.",
@@ -150,17 +143,12 @@ export const translations = {
     prototype: 'PORTAFOLIO INTERACTIVO',
     projectEyebrow: '01 / TRABAJOS DESTACADOS',
     projectTitle: 'Productos, no solo páginas.',
-    projectIntro: 'Una plataforma colaborativa para trazar viajes en el mapa, organizar lugares y conservar recuerdos de viaje.',
-    projectName: 'Travel Maps',
+    projectIntro: 'Productos interactivos para explorar lugares y comprender cómo se comporta el software.',
+    projectCardLabel: 'Proyecto',
+    projectDetailsLabel: 'Detalles del proyecto',
     projectStatus: 'En desarrollo',
-    projectBody: 'Frontend con TypeScript y React, backend basado en APIs, PostgreSQL, autorización, colaboración y flujos de despliegue en la nube.',
-    projectWorkflow: 'Utilizo Codex para apoyar la planificación de la implementación, el análisis del código, el diseño de pruebas y las mejoras iterativas, revisando y validando siempre el código resultante.',
-    projectWorkflowLabel: 'Flujo de trabajo asistido por IA',
-    projectCardLabel: '001 / PROYECTO',
-    projectVisualLabel: 'TRAVEL MAPS / PRODUCTO',
     demoLabel: 'Demo en vivo',
     sourceLabel: 'Código fuente',
-    projectFoot: 'Los enlaces a la demo y al repositorio aparecerán cuando sean públicos.',
     experienceEyebrow: '02 / DETRÁS DEL CÓDIGO',
     experiencePanelTitle: 'Experiencia profesional',
     experienceIntro: 'Soy ingeniero de software full-stack senior con más de ocho años de experiencia desarrollando aplicaciones web, servicios backend y soluciones en la nube. Mi trayectoria ha evolucionado desde el desarrollo de software hasta el liderazgo técnico, con responsabilidades en arquitectura, revisión de código, entrega de productos y colaboración entre equipos. Utilizo el desarrollo asistido por IA para explorar opciones técnicas, estructurar tareas de implementación, apoyar la depuración y las pruebas, y mejorar la documentación, manteniendo siempre la responsabilidad sobre el código final. Mi trabajo abarca integraciones empresariales, plataformas de gestión documental, productos geoespaciales y funcionalidades prácticas basadas en IA.',
@@ -259,17 +247,12 @@ export const translations = {
     prototype: 'ETKİLEŞİMLİ PORTFOLYO',
     projectEyebrow: '01 / SEÇİLMİŞ ÇALIŞMALAR',
     projectTitle: 'Sadece sayfalar değil, ürünler.',
-    projectIntro: 'Gezileri haritada planlamak, yerleri düzenlemek ve seyahat anılarını saklamak için geliştirilen, birlikte çalışmaya olanak sağlayan bir platform.',
-    projectName: 'Travel Maps',
+    projectIntro: 'Yerleri keşfetmek ve yazılımın nasıl davrandığını anlamak için etkileşimli ürünler.',
+    projectCardLabel: 'Proje',
+    projectDetailsLabel: 'Proje ayrıntıları',
     projectStatus: 'Geliştirme aşamasında',
-    projectBody: 'TypeScript ve React ile geliştirilen ön yüz, API tabanlı arka uç, PostgreSQL, yetkilendirme, birlikte çalışma özellikleri ve buluta dağıtım süreçleri.',
-    projectWorkflow: 'Uygulamayı planlamak, kodu analiz etmek, testleri tasarlamak ve adım adım iyileştirmeler yapmak için Codex’ten destek alıyorum; üretilen kodu her aşamada kendim inceleyip doğruluyorum.',
-    projectWorkflowLabel: 'Yapay zekâ destekli iş akışı',
-    projectCardLabel: '001 / PROJE',
-    projectVisualLabel: 'TRAVEL MAPS / ÜRÜN',
     demoLabel: 'Canlı demo',
     sourceLabel: 'Kaynak kod',
-    projectFoot: 'Demo ve kaynak kod bağlantıları herkese açıldığında eklenecek.',
     experienceEyebrow: '02 / KODUN ARKASINDA',
     experiencePanelTitle: 'Mesleki Deneyim',
     experienceIntro: 'Web uygulamaları, arka uç servisleri ve bulut tabanlı çözümler geliştirmede sekiz yılı aşkın deneyime sahip kıdemli bir full-stack yazılım mühendisiyim. Yazılım geliştirmeyle başladığım kariyerimde teknik liderliğe ilerledim; mimari, kod inceleme, ürün teslimi ve farklı uzmanlık alanlarındaki ekiplerle birlikte çalışma sorumlulukları üstlendim. Teknik seçenekleri değerlendirmek, geliştirme görevlerini planlamak, hata ayıklama ve test süreçlerini desteklemek ve dokümantasyonu iyileştirmek için yapay zekâdan yararlanıyorum; ortaya çıkan kodun sorumluluğunu ise her zaman kendim üstleniyorum. Deneyimim kurumsal entegrasyonları, belge yönetimi platformlarını, coğrafi bilgi ürünlerini ve gerçek ihtiyaçlara yanıt veren yapay zekâ özelliklerini kapsıyor.',

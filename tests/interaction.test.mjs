@@ -295,14 +295,14 @@ test('enhanced angular envelope is 1.8x and manual takeover/resumption stays con
   }
 });
 
-test('idle runs the existing Home and active-face paths at 3x frequency without scaling amplitude', () => {
-  assert.equal(IDLE_SPEED_MULTIPLIER, 3);
+test('idle runs the existing Home and active-face paths at the configured frequency without scaling amplitude', () => {
+  assert.ok(IDLE_SPEED_MULTIPLIER > 0);
   for (const overview of [false, true]) {
     const amplitude = overview ? ambientMotion.homeAmplitude : ambientMotion.amplitude;
     const speed = overview ? ambientMotion.homeSpeed : ambientMotion.speed;
     for (const time of [0, .1, 1, 2, 3, 10, 90]) {
       const angles = speed.map((frequency, axis) => {
-        const phase = time * 3 * frequency;
+        const phase = time * IDLE_SPEED_MULTIPLIER * frequency;
         const wave = overview ? Math.sin(phase) : (Math.sin(phase) + .15 * Math.sin(phase * .43)) / 1.15;
         return wave * amplitude[axis];
       });

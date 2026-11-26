@@ -6,9 +6,10 @@ import { careerPeriods, formatCareerMonth } from '../data/academic';
 import { EducationPanel } from './EducationPanel';
 import { HomeControl } from './HomeControl';
 import { CvDownload } from './CvSatellite';
+import { ProjectsPanel } from './ProjectsPanel';
 import { TechnologyStack } from './TechnologyStack';
 import { startupMark } from '../loading/readiness';
-import { experienceStacks, languages, links, projectStack, sections, translations, type Language, type Section } from '../data/content';
+import { experienceStacks, languages, links, sections, translations, type Language, type Section } from '../data/content';
 
 function Logo() {
   return <svg className="brand-logo" viewBox="0 0 44 44" aria-hidden="true" fill="none">
@@ -54,23 +55,7 @@ export function ContentPanel({ active, lang, onSelect }: { active: Section; lang
       <div className="hero-footnote"><span className="footnote-line" /> {t.homeFootnote}</div>
     </section>
   );
-  if (active === 'projects') return (
-    <section className="content-pane" aria-labelledby="section-title" key="projects">
-      <p className="section-overline">{t.projectEyebrow}</p>
-      <h1 id="section-title" tabIndex={-1}>{t.projectTitle}</h1>
-      <p className="section-intro">{t.projectIntro}</p>
-      <article className="feature-card">
-        <div className="card-topline"><span className="card-serial">{t.projectCardLabel}</span><span className="status-dot">{t.projectStatus}</span></div>
-        <div className="feature-visual" aria-hidden="true"><span className="visual-grid"/><span className="visual-orbit visual-orbit--one"/><span className="visual-orbit visual-orbit--two"/><span className="visual-pin pin-one"/><span className="visual-pin pin-two"/><span className="visual-pin pin-three"/><span className="visual-caption">{t.projectVisualLabel}</span></div>
-        <div className="feature-info"><h2>{t.projectName}</h2><p>{t.projectBody}</p>
-          <div className="stack-list">{projectStack.map((technology) => <span key={technology}>{technology}</span>)}</div>
-          <p className="project-workflow"><strong>{t.projectWorkflowLabel}</strong> {t.projectWorkflow}</p>
-          {(links.travelMapsDemo || links.travelMapsRepo) && <div className="external-links">{links.travelMapsDemo && <a href={links.travelMapsDemo} target="_blank" rel="noopener noreferrer">{t.demoLabel} ↗</a>}{links.travelMapsRepo && <a href={links.travelMapsRepo} target="_blank" rel="noopener noreferrer">{t.sourceLabel} ↗</a>}</div>}
-          <small className="pending-note">{t.projectFoot}</small>
-        </div>
-      </article>
-    </section>
-  );
+  if (active === 'projects') return <ProjectsPanel lang={lang} />;
   if (active === 'experience') return (
     <section className="content-pane content-pane--experience" aria-labelledby="section-title" key="experience">
       <p className="section-overline">{t.experienceEyebrow}</p>

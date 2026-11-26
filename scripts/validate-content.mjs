@@ -31,6 +31,17 @@ export function validatePortfolioContent(content, publicDir = fileURLToPath(new 
   assert.deepEqual(shape(content.technologyCopy.en), shape(content.technologyCopy.tr));
   assert.deepEqual(shape(content.loadingCopy.en), shape(content.loadingCopy.es));
   assert.deepEqual(shape(content.loadingCopy.en), shape(content.loadingCopy.tr));
+  assert.deepEqual(shape(content.projectCopy.en), shape(content.projectCopy.es));
+  assert.deepEqual(shape(content.projectCopy.en), shape(content.projectCopy.tr));
+  assert.deepEqual(content.projects.map((project) => project.id), ['travel-maps', 'break-my-api']);
+  assert.deepEqual(content.projects.map((project) => project.demo), ['https://travel-map.jhonjaner11.workers.dev/', 'https://break-my-api.jhonjaner11.workers.dev/']);
+  assert.equal(content.projects[0].developmentStatus, 'in-development');
+  for (const project of content.projects) {
+    assert.ok(project.technologies.length);
+    assert.equal(project.repository, undefined, 'Project repository URLs are not confirmed');
+    for (const lang of languages) assert.ok(content.projectCopy[lang][project.id]);
+    for (const width of [600, 1200]) assert.ok(existsSync(join(publicDir, `${project.image.base}-${width}.jpg`)), 'Project capture must exist');
+  }
   assert.equal(new Set(content.technologies.map((item) => item.id)).size, content.technologies.length);
   for (const item of content.technologies) {
     assert.ok(item.evidence);
@@ -58,8 +69,6 @@ export function validatePortfolioContent(content, publicDir = fileURLToPath(new 
   assert.equal(links.email, 'jhonjaner11@gmail.com');
   assert.equal(links.github, 'https://github.com/jcastellanos11');
   assert.equal(links.linkedin, 'https://www.linkedin.com/in/jhonjaner11/');
-  assert.equal(links.travelMapsDemo, null, 'No approved project demo URL has been supplied');
-  assert.equal(links.travelMapsRepo, null, 'No approved project repository URL has been supplied');
   const approvedFiles = new Set();
   for (const [language, asset] of Object.entries(cvCatalog)) {
     assert.ok(languages.includes(language), 'Unknown CV language');

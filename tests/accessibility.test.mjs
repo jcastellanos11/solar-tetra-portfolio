@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, cpSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { faces } from '../src/interaction/faces.ts';
@@ -95,7 +95,7 @@ for (const lang of languages) {
       assert.match(html, /<section[^>]*aria-labelledby="(?:hero-title|section-title)"/);
       assert.match(html, /<h1[^>]*tabindex="-1"/);
       assert.doesNotMatch(html, /href="(?:null|undefined|#)"/);
-      if (active === 'projects') { assert.ok(html.includes('Travel Maps')); assert.doesNotMatch(html, /Live demo|Source ↗/); }
+      if (active === 'projects') { assert.ok(html.includes('Travel Maps')); assert.ok(html.includes('Break My API')); assert.doesNotMatch(html, /github\.com/); }
       if (active === 'contact') assert.ok(html.includes('mailto:jhonjaner11@gmail.com'));
     }
   });
@@ -139,8 +139,8 @@ for (const lang of languages) {
     assert.ok(about.includes(t.aiToolsBody));
     assert.match(about, /<details class="career-details">/);
     assert.equal((about.match(/<details\b/g) || []).length, 3);
-    assert.ok(projects.includes(t.projectStatus)); assert.ok(projects.includes(t.projectWorkflowLabel));
-    assert.match(projects, /Codex/); assert.doesNotMatch(projects, /href=/);
+    assert.ok(projects.includes(t.projectStatus));
+    assert.match(projects, /Codex/);
     assert.doesNotMatch(about, /\bdownload\b|href="[^\"]*\.pdf|CV link coming soon|CV bağlantısı yakında|Enlace al CV/);
     assert.doesNotMatch(about, /Claude Code|Cursor|GitHub Copilot/);
   });
@@ -165,6 +165,35 @@ for (const lang of languages) {
   });
 }
 
+for (const lang of ['en', 'es', 'tr']) {
+  test(`${lang}: exactly two ordered projects have confirmed accessible external demos and complete copy`, () => {
+    const html = view.panel('projects', lang), t = translations[lang];
+    assert.equal((html.match(/<article\b/g) || []).length, 2);
+    assert.equal((html.match(/data-project="travel-maps"/g) || []).length, 1);
+    assert.ok(html.indexOf('data-project="travel-maps"') < html.indexOf('data-project="break-my-api"'));
+    const anchors = [...html.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)].map((match) => match[0]);
+    assert.equal(anchors.length, 2);
+    for (const [index, project] of content.projects.entries()) {
+      const copy = content.projectCopy[lang][project.id];
+      assert.ok(anchors[index].includes(`href="${project.demo}" target="_blank" rel="noopener noreferrer"`));
+      for (const text of [t.demoLabel, project.name, t.newTabLabel]) assert.ok(anchors[index].includes(escaped(text)));
+      for (const text of [copy.category, copy.description, ...copy.details, ...project.technologies]) assert.ok(html.includes(escaped(text)));
+      assert.ok(html.includes(`alt="${escaped(copy.imageAlt)}" loading="lazy" decoding="async"`));
+    }
+    assert.equal((html.match(/<details class="project-details">/g) || []).length, 2);
+    assert.doesNotMatch(html, /github\.com|href="#"|pending-note/);
+  });
+}
+
+test('project screenshots are responsive local captures with reserved dimensions', () => {
+  const html = view.panel('projects', 'en');
+  assert.equal((html.match(/srcSet="[^"]+600w, [^"]+1200w"/gi) || []).length, 2);
+  assert.equal((html.match(/width="1200" height="738"/g) || []).length, 2);
+  const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8');
+  assert.match(css, /\.project-screenshot \{[^}]*width: 100%; height: auto;/);
+  assert.match(css, /\.stack-list \{[^}]*flex-wrap: wrap;/);
+});
+
 test('content validation enforces complete translation parity and the approved English source', () => {
   assert.doesNotThrow(() => validatePortfolioContent(content));
   const doc = readFileSync(new URL('../docs/SOLAR_TETRA_CONTENT_REWRITE.md', import.meta.url), 'utf8');
@@ -174,6 +203,11 @@ test('content validation enforces complete translation parity and the approved E
   assert.equal(translations.en.aiSkillsTitle, 'AI-Assisted Software Development');
   const broken = structuredClone(translations); delete broken.tr.profileLabel;
   assert.throws(() => validatePortfolioContent({ ...content, translations: broken }), /Translation keys\/types differ: tr/);
+  const missingProjectCopy = structuredClone(content.projectCopy); delete missingProjectCopy.tr['break-my-api'];
+  assert.throws(() => validatePortfolioContent({ ...content, projectCopy: missingProjectCopy }));
+  assert.throws(() => validatePortfolioContent({ ...content, projects: [content.projects[0], content.projects[0]] }));
+  assert.equal(content.projectCopy.en['travel-maps'].description, doc.match(/\*\*Short description:\*\* ([^\n]+?)(?:  )?\n/)[1]);
+  assert.equal(content.projectCopy.en['travel-maps'].details[0], doc.match(/\*\*Engineering angle:\*\* ([^\n]+?)(?:  )?\n/)[1]);
 });
 
 test('CV selection requires explicit approval and rejects unsafe or mislabeled filenames', () => {
@@ -186,6 +220,7 @@ test('CV selection requires explicit approval and rejects unsafe or mislabeled f
 test('publication validation rejects a missing or invalid CV asset even when its path is marked approved', (t) => {
   const publicDir = mkdtempSync(join(tmpdir(), 'solar-cv-validation-'));
   t.after(() => rmSync(publicDir, { recursive: true, force: true }));
+  cpSync(new URL('../public/projects', import.meta.url), join(publicDir, 'projects'), { recursive: true });
   const approved = { ...content, cvCatalog: { en: cvCatalog.en } };
   assert.throws(() => validatePortfolioContent(approved, publicDir), /ENOENT/);
   mkdirSync(join(publicDir, 'cv')); writeFileSync(join(publicDir, 'cv', cvCatalog.en.file), 'Not a PDF');
