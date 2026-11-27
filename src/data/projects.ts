@@ -11,10 +11,11 @@ export const projects: readonly Project[] = [
   { id: 'travel-maps', name: 'Travel Maps', demo: 'https://travel-map.jhonjaner11.workers.dev/', technologies: ['TypeScript', 'React', 'PostgreSQL'], developmentStatus: 'in-development', image: { base: '/projects/travel-maps', width: 1200, height: 738 } },
   { id: 'break-my-api', name: 'Break My API', demo: 'https://break-my-api.jhonjaner11.workers.dev/', technologies: ['TypeScript', 'React', 'Vite', 'CSS', 'SVG'], developmentStatus: null, image: { base: '/projects/break-my-api', width: 1200, height: 738 } },
 ];
-type ProjectCopy = { category: string; description: string; details: string[]; imageAlt: string };
+type ProjectCopy = { summary: string; category: string; description: string; details: string[]; imageAlt: string };
 export const projectCopy: Record<Language, Record<ProjectId, ProjectCopy>> = {
   "en": {
     "travel-maps": {
+      "summary": "Trips, places, and shared travel memories.",
       "category": "Full-Stack Web Application",
       "description": "A collaborative platform for mapping trips, organizing places, and preserving travel memories.",
       "details": [
@@ -24,6 +25,7 @@ export const projectCopy: Record<Language, Record<ProjectId, ProjectCopy>> = {
       "imageAlt": "Travel Maps live application showing its interactive world map."
     },
     "break-my-api": {
+      "summary": "Explore API traffic, bottlenecks, and resilience.",
       "category": "Interactive API Load & Resilience Simulator",
       "description": "An interactive API resilience simulator that helps developers understand how systems behave under pressure. Experiment with traffic, rate limiting, concurrency, caching, and auto scaling while observing request outcomes and performance metrics in real time.",
       "details": [
@@ -36,6 +38,7 @@ export const projectCopy: Record<Language, Record<ProjectId, ProjectCopy>> = {
   },
   "es": {
     "travel-maps": {
+      "summary": "Viajes, lugares y recuerdos compartidos.",
       "category": "Aplicación web full-stack",
       "description": "Una plataforma colaborativa para trazar viajes en el mapa, organizar lugares y conservar recuerdos de viaje.",
       "details": [
@@ -45,6 +48,7 @@ export const projectCopy: Record<Language, Record<ProjectId, ProjectCopy>> = {
       "imageAlt": "Aplicación Travel Maps en vivo con su mapa mundial interactivo."
     },
     "break-my-api": {
+      "summary": "Explora el tráfico, los cuellos de botella y la resiliencia de APIs.",
       "category": "Simulador interactivo de carga y resiliencia de APIs",
       "description": "Un simulador interactivo de resiliencia de APIs que ayuda a comprender cómo se comportan los sistemas bajo presión. Experimenta con el tráfico, los límites de solicitudes, la concurrencia, la caché y el escalado automático mientras observas los resultados y las métricas de rendimiento en tiempo real.",
       "details": [
@@ -57,6 +61,7 @@ export const projectCopy: Record<Language, Record<ProjectId, ProjectCopy>> = {
   },
   "tr": {
     "travel-maps": {
+      "summary": "Geziler, yerler ve paylaşılan seyahat anıları.",
       "category": "Full-stack web uygulaması",
       "description": "Gezileri haritada planlamak, yerleri düzenlemek ve seyahat anılarını saklamak için geliştirilen, birlikte çalışmaya olanak sağlayan bir platform.",
       "details": [
@@ -66,6 +71,7 @@ export const projectCopy: Record<Language, Record<ProjectId, ProjectCopy>> = {
       "imageAlt": "Travel Maps canlı uygulamasının etkileşimli dünya haritası."
     },
     "break-my-api": {
+      "summary": "API trafiğini, darboğazları ve dayanıklılığı keşfedin.",
       "category": "Etkileşimli API yük ve dayanıklılık simülatörü",
       "description": "Sistemlerin yük altında nasıl davrandığını anlamaya yardımcı olan etkileşimli bir API dayanıklılık simülatörü. İstek sonuçlarını ve performans metriklerini gerçek zamanlı izlerken trafik, istek sınırlama, eşzamanlılık, önbellekleme ve otomatik ölçeklendirmeyi deneyin.",
       "details": [

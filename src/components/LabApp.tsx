@@ -7,6 +7,7 @@ import { EducationPanel } from './EducationPanel';
 import { HomeControl } from './HomeControl';
 import { CvDownload } from './CvSatellite';
 import { ProjectsPanel } from './ProjectsPanel';
+import { companies } from '../data/companies';
 import { TechnologyStack } from './TechnologyStack';
 import { startupMark } from '../loading/readiness';
 import { experienceStacks, languages, links, sections, translations, type Language, type Section } from '../data/content';
@@ -67,8 +68,13 @@ export function ContentPanel({ active, lang, onSelect }: { active: Section; lang
         <h2 id="experience-title">{t.experienceTitle}</h2>
         <ol className="career-timeline">
           {t.experience.map((job) => <li key={job.id}>
-            <h3>{job.company}</h3><p className="career-role">{job.position}</p>
-            <CareerPeriod id={job.id} lang={lang} />
+            <div className="company-heading">
+              <div className="company-logo"><img src={companies[job.id].logo} alt={`${t.companyLogoLabel} — ${job.company}`} loading="lazy" decoding="async" /></div>
+              <div className="company-information"><h3>{job.company}</h3><p className="career-role">{job.position}</p>
+                <CareerPeriod id={job.id} lang={lang} />
+                <a className="company-website" href={companies[job.id].website} target="_blank" rel="noopener noreferrer">{t.companyWebsiteLabel}<span aria-hidden="true"> ↗</span><span className="sr-only"> — {job.company}. {t.newTabLabel}</span></a>
+              </div>
+            </div>
             <p>{job.summary}</p>
             <details className="career-details">
               <summary>{t.experienceDetailsLabel}<span className="sr-only"> — {job.company}</span></summary>

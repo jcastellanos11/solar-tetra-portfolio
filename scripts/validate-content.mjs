@@ -17,6 +17,11 @@ export function validatePortfolioContent(content, publicDir = fileURLToPath(new 
   const { languages, sections, translations, links, cvCatalog, selectCv } = content;
   assert.deepEqual(languages, ['en', 'es', 'tr']);
   assert.deepEqual(sections, ['home', 'projects', 'experience', 'education', 'contact']);
+  assert.deepEqual(Object.values(content.companies).map((company) => company.website), ['https://parivedasolutions.com/', 'https://infometrika.com/', 'https://www.ateam.com.co/']);
+  assert.deepEqual(Object.values(content.companies).map((company) => company.sourceLogo), ['/img/pariveda.png', '/img/infometrika.jpg', '/img/ateam.png']);
+  for (const company of Object.values(content.companies)) {
+    for (const asset of [company.logo, company.sourceLogo]) assert.ok(existsSync(join(publicDir, asset)), 'Company logo must exist');
+  }
   assert.deepEqual(content.careerPeriods, {
     pariveda: { start: '2025-11', end: null }, infometrika: { start: '2018-09', end: '2025-10' }, assistance: { start: '2017-07', end: '2018-09' },
   });
@@ -33,8 +38,10 @@ export function validatePortfolioContent(content, publicDir = fileURLToPath(new 
   assert.deepEqual(shape(content.loadingCopy.en), shape(content.loadingCopy.tr));
   assert.deepEqual(shape(content.projectCopy.en), shape(content.projectCopy.es));
   assert.deepEqual(shape(content.projectCopy.en), shape(content.projectCopy.tr));
-  assert.deepEqual(content.projects.map((project) => project.id), ['travel-maps', 'break-my-api']);
-  assert.deepEqual(content.projects.map((project) => project.demo), ['https://travel-map.jhonjaner11.workers.dev/', 'https://break-my-api.jhonjaner11.workers.dev/']);
+  assert.deepEqual(content.projects.slice(0, 2).map((project) => project.id), ['travel-maps', 'break-my-api']);
+  assert.equal(new Set(content.projects.map((project) => project.id)).size, content.projects.length, 'Project IDs must be unique');
+  assert.deepEqual(content.projects.slice(0, 2).map((project) => project.demo), ['https://travel-map.jhonjaner11.workers.dev/', 'https://break-my-api.jhonjaner11.workers.dev/']);
+  for (const language of languages) assert.deepEqual(Object.keys(content.projectCopy[language]).sort(), content.projects.map((project) => project.id).sort());
   assert.equal(content.projects[0].developmentStatus, 'in-development');
   for (const project of content.projects) {
     assert.ok(project.technologies.length);

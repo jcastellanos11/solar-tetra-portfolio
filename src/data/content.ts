@@ -17,6 +17,7 @@ export const links: { github: string | null; linkedin: string | null; email: str
 };
 
 export { projects, projectCopy } from './projects.ts';
+export { companies } from './companies.ts';
 export const experienceStacks = {
   pariveda: ['Python/Django', 'React', 'TypeScript', 'AWS'],
   infometrika: ['Python/Django', 'JavaScript/TypeScript', 'Vue.js', 'React', 'PostgreSQL/PostGIS', 'MongoDB', 'Docker', 'CI/CD', 'PHP'],
@@ -41,6 +42,10 @@ export const translations = {
     projectTitle: 'Products, not just pages.',
     projectIntro: 'Interactive products for exploring places and understanding how software behaves.',
     projectCardLabel: 'Project',
+    companyLogoLabel: 'Company logo',
+    companyWebsiteLabel: 'Website',
+    openProjectLabel: 'Open project',
+    backProjectsLabel: 'Back to Projects',
     projectDetailsLabel: 'Project details',
     projectStatus: 'In development',
     demoLabel: 'Live demo',
@@ -145,6 +150,10 @@ export const translations = {
     projectTitle: 'Productos, no solo páginas.',
     projectIntro: 'Productos interactivos para explorar lugares y comprender cómo se comporta el software.',
     projectCardLabel: 'Proyecto',
+    companyLogoLabel: 'Logotipo de la empresa',
+    companyWebsiteLabel: 'Sitio web',
+    openProjectLabel: 'Ver proyecto',
+    backProjectsLabel: 'Volver a Proyectos',
     projectDetailsLabel: 'Detalles del proyecto',
     projectStatus: 'En desarrollo',
     demoLabel: 'Demo en vivo',
@@ -249,6 +258,10 @@ export const translations = {
     projectTitle: 'Sadece sayfalar değil, ürünler.',
     projectIntro: 'Yerleri keşfetmek ve yazılımın nasıl davrandığını anlamak için etkileşimli ürünler.',
     projectCardLabel: 'Proje',
+    companyLogoLabel: 'Şirket logosu',
+    companyWebsiteLabel: 'Web sitesi',
+    openProjectLabel: 'Projeyi aç',
+    backProjectsLabel: 'Projelere dön',
     projectDetailsLabel: 'Proje ayrıntıları',
     projectStatus: 'Geliştirme aşamasında',
     demoLabel: 'Canlı demo',

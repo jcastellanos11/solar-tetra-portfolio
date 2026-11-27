@@ -21,6 +21,9 @@ const compiled = await build({
       import {renderToStaticMarkup} from 'react-dom/server';
       import {LabApp, ContentPanel} from './src/components/LabApp';
       import {FaceLabels} from './src/components/FaceLabels';
+      import {ProjectDetail} from './src/components/ProjectsPanel';
+      import {projects} from './src/data/projects';
+      export const projectDetail = (id,lang) => renderToStaticMarkup(createElement(ProjectDetail,{project:projects.find(p=>p.id===id),lang}));
       export const app = () => renderToStaticMarkup(createElement(LabApp));
       export const panel = (active, lang) => renderToStaticMarkup(createElement(ContentPanel, {active, lang, onSelect: () => {}}));
       export const labels = (active, lang) => renderToStaticMarkup(createElement(FaceLabels, {active, lang, elements: {}, onSelect: () => {}}));`,
@@ -140,7 +143,6 @@ for (const lang of languages) {
     assert.match(about, /<details class="career-details">/);
     assert.equal((about.match(/<details\b/g) || []).length, 3);
     assert.ok(projects.includes(t.projectStatus));
-    assert.match(projects, /Codex/);
     assert.doesNotMatch(about, /\bdownload\b|href="[^\"]*\.pdf|CV link coming soon|CV bağlantısı yakında|Enlace al CV/);
     assert.doesNotMatch(about, /Claude Code|Cursor|GitHub Copilot/);
   });
@@ -166,22 +168,36 @@ for (const lang of languages) {
 }
 
 for (const lang of ['en', 'es', 'tr']) {
-  test(`${lang}: exactly two ordered projects have confirmed accessible external demos and complete copy`, () => {
+  test(`${lang}: compact overview contains two ordered project controls with translated summaries`, () => {
     const html = view.panel('projects', lang), t = translations[lang];
-    assert.equal((html.match(/<article\b/g) || []).length, 2);
-    assert.equal((html.match(/data-project="travel-maps"/g) || []).length, 1);
+    assert.equal((html.match(/data-project=/g) || []).length, 2);
     assert.ok(html.indexOf('data-project="travel-maps"') < html.indexOf('data-project="break-my-api"'));
-    const anchors = [...html.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)].map((match) => match[0]);
-    assert.equal(anchors.length, 2);
-    for (const [index, project] of content.projects.entries()) {
-      const copy = content.projectCopy[lang][project.id];
-      assert.ok(anchors[index].includes(`href="${project.demo}" target="_blank" rel="noopener noreferrer"`));
-      for (const text of [t.demoLabel, project.name, t.newTabLabel]) assert.ok(anchors[index].includes(escaped(text)));
-      for (const text of [copy.category, copy.description, ...copy.details, ...project.technologies]) assert.ok(html.includes(escaped(text)));
-      assert.ok(html.includes(`alt="${escaped(copy.imageAlt)}" loading="lazy" decoding="async"`));
+    for (const project of content.projects) {
+      assert.ok(html.includes(`aria-label="${escaped(t.openProjectLabel)} — ${project.name}"`));
+      assert.ok(html.includes(escaped(content.projectCopy[lang][project.id].summary)));
     }
-    assert.equal((html.match(/<details class="project-details">/g) || []).length, 2);
-    assert.doesNotMatch(html, /github\.com|href="#"|pending-note/);
+    assert.doesNotMatch(html, /<article|href=|github\.com|project-explanation/);
+  });
+  test(`${lang}: project details preserve complete approved content, technologies and safe demos`, () => {
+    for (const project of content.projects) {
+      const html = view.projectDetail(project.id, lang), copy = content.projectCopy[lang][project.id];
+      for (const text of [copy.category, copy.description, ...copy.details, ...project.technologies]) assert.ok(html.includes(escaped(text)));
+      assert.ok(html.includes(`href="${project.demo}" target="_blank" rel="noopener noreferrer"`));
+      assert.ok(html.includes(escaped(translations[lang].demoLabel)));
+      assert.ok(html.includes(`alt="${escaped(copy.imageAlt)}"`));
+      assert.doesNotMatch(html, /github\.com/);
+    }
+  });
+  test(`${lang}: employer branding uses exact assets and safe official company actions`, () => {
+    const html = view.panel('experience', lang), t = translations[lang];
+    for (const job of t.experience) {
+      const company = content.companies[job.id];
+      assert.ok(html.includes(`src="${company.logo}" alt="${escaped(t.companyLogoLabel)} — ${job.company}"`));
+      assert.ok(html.includes(`href="${company.website}" target="_blank" rel="noopener noreferrer"`));
+      assert.ok(html.includes(escaped(t.companyWebsiteLabel)));
+      assert.ok(html.includes(escaped(job.summary)));
+    }
+    assert.equal((html.match(/class="company-logo"/g) || []).length, 3);
   });
 }
 
@@ -221,6 +237,7 @@ test('publication validation rejects a missing or invalid CV asset even when its
   const publicDir = mkdtempSync(join(tmpdir(), 'solar-cv-validation-'));
   t.after(() => rmSync(publicDir, { recursive: true, force: true }));
   cpSync(new URL('../public/projects', import.meta.url), join(publicDir, 'projects'), { recursive: true });
+  cpSync(new URL('../public/img', import.meta.url), join(publicDir, 'img'), { recursive: true });
   const approved = { ...content, cvCatalog: { en: cvCatalog.en } };
   assert.throws(() => validatePortfolioContent(approved, publicDir), /ENOENT/);
   mkdirSync(join(publicDir, 'cv')); writeFileSync(join(publicDir, 'cv', cvCatalog.en.file), 'Not a PDF');

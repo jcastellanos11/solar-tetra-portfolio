@@ -1,5 +1,31 @@
 # Solar Tetra browser verification
 
+## Employer branding and compact explorer — November 27, 2026
+
+**Provisional QA verdict: 4/5 for the exercised local flows.** The explorer, focus restoration, logos and fixed scene framing worked in native Firefox. A normal HTTP production build and the remaining device/browser matrix still need review.
+
+The browser connector host was unavailable. Starting Vite at 127.0.0.1:5184 failed with `listen EPERM`. Instead of claiming the deployed site contained unpublished changes, a temporary esbuild IIFE of the actual LabApp/React/WebGL code and current CSS was opened locally in Firefox. Only the QA fixture changes asset URLs to their local `file:` locations and bundles deferred code eagerly. This permits real interaction/layout/shader observations, **not** HTTP/deferred-loading/cache/CSP/deployment certification. The fixture is outside the repository and is not shipped.
+
+| CSS viewport width | Observed scope |
+| --- | --- |
+| 1280px | EN dark Home, compact Projects, Break My API detail, keyboard Back, Education, Contact; scene framing comparison |
+| 1440px | EN dark Experience; all three real logos, official link names/URLs, long document scrolling beside sticky scene |
+| 1920px | EN dark Experience preview; logos and left/central layout. Preview exceeds host display width; rightmost scene region not fully visible |
+| 320px | ES light scene/navigation and Experience; Pariveda logo/role/dates/website and expanded role details |
+| 375px | ES light Travel Maps detail, actual screenshot, Back control and keyboard return |
+| 390px | TR light compact overview, wrapped summaries, both thumbnails and navigation |
+| 430px | TR dark Break My API detail, Back, screenshot and translated description |
+
+- The live energetic-glass tetrahedron and warm core rendered. At 1280px the core/controls retained their framing between Home, overview and detail, then Education and Contact; detail selection kept Projects active. No content-driven scene enlargement was observed. Long Experience scrolling at 1440px retained a bounded sticky scene instead of stretching it. These are visual comparisons, not instrumented Canvas dimension/GPU measurements.
+- Selecting Break My API focused its H1. Shift+Tab then Enter activated Back and restored focus to its original overview button. The same keyboard return worked for Travel Maps at 375px. Both original screenshots and complete detail content remain available, without a modal or external route. Remaining section navigation stayed usable.
+- All three logos rendered fully inside equal neutral frames at desktop size, preserving their differing proportions. Spanish narrow Pariveda branding/role/date/link wrapped without horizontal overflow. Exact employer URLs and translated new-tab names appeared in the accessibility tree; automated markup checks additionally verify `target`/`rel`. The external employer destinations were not independently opened during this pass.
+- Native dragging visibly rotated the tetrahedron after the layout change; Escape restored Home. Full manual settling and inertia are additionally covered by existing automated/mounted-scene tests, not newly certified across physical devices here. CV sphere/orbit and labels remained visible; no new CV download was performed.
+- Restored responsive width 390, the original enabled touch-emulation setting, and closed Responsive Design Mode. The temporary local QA tab remains in EN/dark/Home. Desktop mouse/keyboard in responsive mode does not certify physical touch.
+
+121 automated tests, content validation, TypeScript and production build pass. The suite includes mounted real React local-state/ref/focus/scroll/unmount tests using test host nodes, HTML semantics/copy checks for all languages, ten in-memory project fixtures, exact employer mapping/assets/URLs, contain styling, and shared scene-sizing CSS. Test host nodes do not implement browser layout; no screen-reader test was performed.
+
+Remaining: normal `npm run dev`/production HTTP preview; complete language × theme × width matrix; full 1920px right-edge review; short desktop/landscape viewport heights; physical iOS/Android touch, browser Back expectations, focus/scroll after opening a far-down item in a real 6–10 project collection; screen readers, Chrome/Safari, browser reduced-motion preference and performance/deferred-loading regression checks. Earlier outstanding failure-mode checks below remain outstanding. No deployment was performed.
+
 ## Two-project update — November 27, 2026
 
 - Native Firefox opened the exact confirmed Travel Maps and Break My API deployed URLs successfully. Travel Maps showed its public world map after its welcome panel was dismissed. Break My API showed its landing page and `/playground`, with synthetic-only traffic, token bucket/cache/origin flow, HTTP outcomes, capacity/p95 metrics, scenarios, and learning navigation. A local README/package/engine review corroborated the simulator claims; no real load test was run.
